@@ -1,18 +1,19 @@
-var CTRLC = '\u0003',
-	out = console.log,
-	PLAYER = {
-		
-		EMPTY: '.',
-		CROSS:'X',
-		NOUGHT: '0'
-	},
-	NUMBER_CELLS = 9;
 
+var out = console.log;
 
 // The Board
 // ---------
 
-var Board = function() {
+var	PLAYER = {
+		
+		EMPTY: '.',
+		CROSS: 'X',
+		NOUGHT: '0'
+	};
+
+var Board = new BoardClass();
+
+function BoardClass() {
 	
 	// Public
 	// ======
@@ -25,25 +26,38 @@ var Board = function() {
 		return instance;
 	};
 	
-	// Rotate the board by 90 degrees clockwise. 
-	// The values in 'rotate' tell us how to move the old cell
-	// to get it in the new position.
+	// Board.init()
+	// ------------
 	
+	this.init = function() {
+		
+		var i,
+			cell,
+			NUMBER_CELLS = 9;
+		
+		// Initialise the board array.
+		for (i = 0, board.length = 0; i < NUMBER_CELLS; i++) {
+			
+			// cell = parseInt(i + 1, 10);
+			cell = PLAYER.EMPTY;
+			board.push(cell);
+		}
+		
+	}; // Board.init()	
+
 	// Board.display()
 	// ---------------
 	
 	this.display = function() {
 		
-		var i = 0;
+		var i;
+
+		out(' ');
 		
-		while (i < 9) {
+		for (i = 0; i < board.length; i += 3) {
 			
-			out(cells[i].player + cells[i+1].player + cells[i+2].player);
-			
-			i += 3;
+			out(' ' + board[i] + board[i+1] + board[i+2]);
 		}
-		
-		out('---');
 		
 	}; // Board.display()
 
@@ -51,145 +65,274 @@ var Board = function() {
 	// -----------
 	
 	this.set = function (id, player) {
-		
-		// TODO - Check player
-/*	
-		if (cells[id - 1].player !== PLAYER.EMPTY) {
+
+		if (parseInt(id, 10) < 1 || parseInt(id, 10) > 9) {
 			
-			out ('Already taken, try again');
+			out('Number has to be between 1 and 9');
 			return false;
 		}
-*/		
-		cells[id - 1].player = player;
 
+		// Make it an index.
+		var i = id - 1;
+
+		if (board[i] === PLAYER.CROSS || board[i] === PLAYER.NOUGHT) {
+	
+			out('The move has already been taken');
+			return false;
+		}
+
+		board[i] = player;
 		return true;
 		
 	}; // Board.set()
 
-	// Board.getResponse()
-	// -------------------
+	// Board.getComputerResponse()
+	// ---------------------------
 
-	this.getResponse = function(key) {
+	this.getComputerResponse = function(key) {
 
-		// Simply fill in the first space.
-		for (var i = 0; i < 9; i++) {
+		var i,
+			madeMove = false;
+
+		// Look for a winning move
+		// -----------------------
+
+		// TODO
+
+		// Look for a defensive, blocking move
+		// -----------------------------------
+
+		//TODO - Put this into data table.
+
+		// Check for 'X X .' on top line, e.g. 1 and 2.
+		for (i = 0; i < 4; i++) {
+
+			if (board[0] === PLAYER.CROSS && board[1] == PLAYER.CROSS && !madeMove) {
+				
+				board[2] = PLAYER.NOUGHT;
+				madeMove = true;
+			}
 			
-			if (cells[i].player === PLAYER.EMPTY) {
+			transform(TRANSFORM.ROTATE_90_CW);
+		}
+
+		if (madeMove) {
 			
-				cells[i].player = PLAYER.NOUGHT;
+			return;
+		}
+
+		// Check for '. X X' on top line, e.g. 2 and 3.
+		for (i = 0; i < 4; i++) {
+
+			if (board[1] === PLAYER.CROSS && board[2] == PLAYER.CROSS && !madeMove) {
+				
+				board[0] = PLAYER.NOUGHT;
+				madeMove = true;
+			}
+			
+			transform(TRANSFORM.ROTATE_90_CW);
+		}
+
+		if (madeMove) {
+			
+			return;
+		}
+
+		// Check for 'X X .' through the middle from the middle, e.g. 3 and 5 
+		for (i = 0; i < 4; i++) {
+
+			if (board[1] === PLAYER.CROSS && board[4] == PLAYER.CROSS && !madeMove) {
+				
+				board[7] = PLAYER.NOUGHT;
+				madeMove = true;
+			}
+			
+			transform(TRANSFORM.ROTATE_90_CW);
+		}
+		
+		if (madeMove) {
+			
+			return;
+		}
+
+		// Check for 'X X .' through the middle from the corner, e.g. 1 and 5 
+		for (i = 0; i < 4; i++) {
+
+			if (board[0] === PLAYER.CROSS && board[4] == PLAYER.CROSS && !madeMove) {
+				
+				board[8] = PLAYER.NOUGHT;
+				madeMove = true;
+			}
+			
+			transform(TRANSFORM.ROTATE_90_CW);
+		}
+
+		if (madeMove) {
+			
+			return;
+		}
+
+		// Put it in the middle if that's not  taken.
+		if (!moveTaken(4)) {
+
+			board[4] = PLAYER.NOUGHT;
+			madeMove = true;
+		}
+			
+		if (madeMove) {
+			
+			return;
+		}
+
+		// TODO - Make this random. 
+
+		// Simply fill in the first free space.
+		for (i = 0; i < 9; i++) {
+			
+			// TODO - Put this check in a function.
+			
+			if (!moveTaken(i)) {
+			
+				board[i] = PLAYER.NOUGHT;
+				madeMove = true;
 				break;
 			}
 		}
-		
-	}; // Board.getResponse()
+
+	}; // Board.getComputerResponse()
 
 	// Board.checkForWin()
 	// -------------------
 
-
-	// TODO - Check for win.
-
 	this.checkForWin = function() {
 
 		var i,
-			win;
-		
-		// Rotate the board four times and check each time for a winning 
-		// pattern.
-		for (i = 0; i < 4; i++) {
+			draw = true;
+				
+		// Check for winning patterns across, by shifting the board in the board down 
+		// three times and see if the winning pattern comes into the first row.
+		for (i = 0; i < 3; i++) {
+
+			if (moveTaken(0) && board[0] === board[1] && board[0] === board[2]) {
 			
-			// Check for winning patterns: across, diagonal or down.
-			if ((cells[0].player === cells[1].player && cells[0].player === cells[2].player) ||
-				(cells[0].player === cells[4].player && cells[0].player === cells[8].player) ||
-				(cells[0].player === cells[3].player && cells[0].player === cells[6].player))
-			{
-				out(cells[0].player + ' wins!');
-				process.exit();	
+				win();
 			}
 			
-			rotate90();
+			transform(TRANSFORM.SHIFT_DOWN);
 		}
+		
+		// Check for winning pattern down, by shifting the cells in the board right 
+		// three times and see if the winning pattern comes into the first column.
+		for (i = 0; i < 3; i++) {
+
+			if (moveTaken(0) && board[0] === board[3] && board[0] === board[6]) {
+				
+				win();
+			}
+			
+			transform(TRANSFORM.SHIFT_RIGHT);			
+		}		
+		
+		// Check for winning pattern diagonally by rotating the cells 90 degrees CW 
+		// three times and see if the winning pattern comes into the first column.
+		// The last ones aren't actually necessary, they just put things back as they were.
+		for (i = 0; i < 4; i++) {
+
+			if (moveTaken(0) && board[0] === board[4] && board[0] === board[8]) {
+				
+				win();
+			}
+			
+			transform(TRANSFORM.ROTATE_90_CW);
+		}
+
+		// Check for a draw
+		
+		for (i = 0; i < board.length; i++) {
+			
+			if (!moveTaken(i)) {
+				
+				draw = false;
+				break;
+			}
+		}
+
+		if (draw) {
+			
+			out('\nDraw - resetting board');
+			instance.init();
+		}
+
+		// Board.checkForWin.win()
+		// -----------------------
+
+		function win() {
+			
+			out(board[0] + ' wins!\n');
+			out('Pick a number from 1 to 9:');
+			instance.init();
+			
+		} // Board.checkForWin.win()
 		
 	}; // Board.checkForWin()	
 
 	// Private
-	// -------
+	// =======
 
-	// An array of 'Cell's.
-	var cells = [],
+	// The board - an array of chars.
+	var board = [],
 
 	// Return the instance to make this a singleton.
-		instance = this,
-	
-		row,
-		col,
-		cell;
+		instance = this;
 
-	// Initialise the cells array.
-	for (row = 0; row < 3; row++) {
-		
-		for (col = 0; col < 3; col++) {
-			
-			cell = new Cell(col, row, parseInt((row * 3) + col + 1, 10));
-//			cell = new Cell(col, row, PLAYER.EMPTY);
-			cells.push(cell);				
-		}
-	}
-	
-	// Board.Cell()
-	// ------------
-	
-	function Cell(col, row, player) {
-/*
-
-// TODO - Check player type.
-
-		var badPlayerType = true;
-
-		for (type in PLAYER) {
-			
-			if (player === type) {
-				
-				badPlayerType = false;
-			}
-		}
-		
-		if (badPlayerType) {
-			
-			throw new Error('Board.Cell() - bad player type');
-		}		
-*/
-
-		this.col = col, 
-		this.row = row, 
-		this.player = player;
-		
-	} // Board.Cell()
-
-	// Board.rotate90()
+	// Board.transform()
 	// ----------------
+	//
+	// Store the old player positions then apply the transformation
+	// to the board; move the cells to their new positions.
 	
-	function rotate90() {
+	// type parameter enum.
+	var TRANSFORM = {
+		
+		ROTATE_90_CW: 0,
+		ROTATE_90_CCW: 1,		
+		SHIFT_RIGHT: 2,
+		SHIFT_LEFT: 3,
+		SHIFT_UP: 4,
+		SHIFT_DOWN: 5
+	};
 
-		var rotate = [7, 4, 1, 8, 5, 2, 9, 6, 3],
+	function transform(type) {
+
+		var newPosition = [[3, 6, 9, 2, 5, 8, 1, 4, 7],  // Rotate 90 CW
+						   [7, 4, 1, 8, 5, 2, 9, 6, 3],  // Rotate 90 CCW
+						   [2, 3, 1, 5, 6, 4, 8, 9, 7],  // Shift 1 right
+						   [3, 1, 2, 6, 4, 5, 9, 7, 8],  // Shift 1 left
+						   [7, 8, 9, 1, 2, 3, 4, 5, 6],  // Shift 1 up
+						   [4, 5, 6, 7, 8, 9, 1, 2, 3]], // Shift 1 Down						 
 			oldPosition = [],
 			i;
 
-		for (i = 0; i < NUMBER_CELLS; i++) {
+		for (i = 0; i < board.length; i++) {
 			
-			oldPosition[i] = cells[i].player;
+			oldPosition[i] = board[i];
 		}
 
-		for (i = 0; i < NUMBER_CELLS; i++) {
+		for (i = 0; i < board.length; i++) {
 			
-			cells[i].player = oldPosition[rotate[i]- 1];
+			board[i] = oldPosition[newPosition[type][i]- 1];
 		}
 		
-	}; // Board.rotate90()
+		// instance.display();
 		
-}; // Board()
-
-var Board = new Board();
+	} // Board.transform()
+	
+	function moveTaken(id) {
+		
+		return (board[id - 1] === PLAYER.CROSS || board[id - 1] === PLAYER.NOUGHT);
+	}
+							
+} // Board()
 
 // Input
 // -----
@@ -205,6 +348,10 @@ stdin.resume();
 
 stdin.setEncoding('utf8');
 
+Board.init();
+
+out('Pick a number from 1 to 9 (CTRL-C to quit):');
+
 // On any data into stdin.
 stdin.on('data', function(key) {
 
@@ -213,9 +360,11 @@ stdin.on('data', function(key) {
 		return;
 	}
 	
+	Board.display();
+	
 	Board.checkForWin(PLAYER.CROSS);
   
-	Board.getResponse(key);
+	Board.getComputerResponse(key);
 
 	Board.display();
 
@@ -225,6 +374,8 @@ stdin.on('data', function(key) {
 	// -------
 	
 	function processKeyPress(key) {
+		
+		var CTRLC = '\u0003';
 		
 		out('key: ' + key);
 		
