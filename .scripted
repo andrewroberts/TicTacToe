@@ -1,0 +1,29 @@
+{
+	
+	"formatter": {
+		
+	    "js": {
+	    	
+	      "indent_size": 4,
+	      "indent_char": "\t"
+	      
+	    	  }
+	     },
+	
+	"jshint": {
+		
+		"options": {
+			
+			"browser": true
+		},
+		
+		"global": [ "require", 
+					"console", 
+					"Buffer", 
+					"exports",
+					"process",
+					"module",
+					"express",
+					"__dirname"]
+	}
+}
