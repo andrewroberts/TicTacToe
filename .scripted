@@ -24,6 +24,9 @@
 					"process",
 					"module",
 					"express",
-					"__dirname"]
+					"__dirname",
+					"module",
+					"describe",
+					"it"]
 	}
 }
